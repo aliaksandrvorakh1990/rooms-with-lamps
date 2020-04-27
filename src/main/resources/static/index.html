@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Room With lamps</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="header">
+      <h1>Rooms With Lamps</h1>
+    </div>
+
+    <div class="creator">
+      <button onclick="document.getElementById('createfrm').style.display='block'">Create room</button>
+      <div id="createfrm" class="modal">
+        <span onclick="closeRoomForm();" class="close" title="Close Modal">&times;</span>
+        <form id="room-form" class="modal-content">
+          <div class="container">
+            <h1>Create room</h1>
+            <p>Please fill in this form to create a room.</p>
+            <hr>
+            <label><b>Name</b></label>
+            <input id="room-name" type="text" onfocus="this.value=''" placeholder="Enter Name"
+                   name="name" pattern="[A-Za-z][A-Za-z\s0-9]{2,}" required>
+            <label><b>Country</b></label>
+            <select id="country" name="countryCode" required>
+            </select>
+            <div class="clearfix">
+              <button type="button" onclick="closeRoomForm();" class="cancelbtn">Cancel</button>
+              <button type="submit"  class="createbtn">Create</button>
+            </div>
+          </div>
+          </form>
+        </div>
+      </div>
+
+    <div class="row">
+      <div class="list">
+        <h2>Rooms list:</h2>
+        <ol id="room-list" class="list"/>
+      </div>
+    </div>
+
+    <div id="room-modal" class="room-modal">
+      <span onclick="closeRoom()" class="close" title="Close Room">&times;</span>
+      <div id="room" class="room" >
+        <h2>Room:</h2>
+        <p id = "my_room_name"></p>
+        <div class="lamp-image">
+          <img id="room-lamp" src="lightoff.png" width="140" height="140" alt="Lamp">
+        </div>
+        <div class="central">
+          <button id="press-button" onclick="">Press</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <h2>Develop by Aliaksander Vorakh</h2>
+    </div>
+    <script type="text/javascript" src="data.json"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
