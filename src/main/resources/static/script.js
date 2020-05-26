@@ -1,3 +1,5 @@
+var stompClient = null;
+
 document.addEventListener("DOMContentLoaded", function(){
     addCountryToForm();
     addRoomsToList();
@@ -107,16 +109,10 @@ function addRoomsToList(){
         })
     })
     .catch(error => {
-        console.log("Mo connection");
+        console.log("No connection");
         console.log(error);
     });
 };
-
-let intervalRefreshLamp;
-
-function stopRefreshLamp() {
-    clearInterval(intervalRefreshLamp);
-}
 
 function enterToRoom(id){
     document.getElementById('room-modal').style.display='block';
@@ -131,10 +127,8 @@ function enterToRoom(id){
         .then(response =>response.json())
         .then((data) => {
             document.getElementById("my_room_name").innerHTML = data.name;
-            intervalRefreshLamp = setInterval(() => {
-              getLamp(data.lampId, code);
-            }, 500);
-            let pressOnClick = "pressLamp(" + data.lampId + ", '" + code + "');"
+            connect(id, code);
+            let pressOnClick = "pressButton(" + data.lampId + ", '" + code + "');";
             document.getElementById("press-button").setAttribute("onclick",pressOnClick);
         }).catch(error => {
             alert("Not Access! OR Not Found this room!");
@@ -144,51 +138,66 @@ function enterToRoom(id){
     })
 };
 
-function getLamp(id, code){
-    let site_protocol = location.protocol;
-    let site_host = location.host;
-    let lamp_path = "/api/lamps/in/";
-    let lamp_url = site_protocol + '//'+ site_host + lamp_path + id +"/from/" + code;
-    fetch(lamp_url)
-    .then((response) => {return response.json();})
-    .then((data) => {
-        if (data.isLightsOn){
-            document.getElementById("room-lamp").setAttribute('src', "lighton.png")
-            document.getElementById("room-lamp").setAttribute('alt', "Lamp is lights on.")
-        } else {
-            document.getElementById("room-lamp").setAttribute('src', "lightoff.png")
-            document.getElementById("room-lamp").setAttribute('alt', "Lamp is lights off.")
-        }
-    })
-    .catch(error => {
-        closeRoom();
-        console.log(error);
-    });
-};
-
-function pressLamp(id, code){
-    let site_protocol = location.protocol
-    let site_host = location.host;
-    let lamp_path = "/api/lamps/in/";
-    let lamp_url = site_protocol + '//'+ site_host + lamp_path + id +"/from/" + code;
-    fetch(lamp_url, { method: 'PUT' })
-    .catch(error => {
-        console.log(error);
-        closeRoom();
-    });
-
-};
 
 function closeRoomForm() {
     document.getElementById('createfrm').style.display='none';
 }
 
 function closeRoom() {
-    stopRefreshLamp();
+    hideRoom();
+    disconnect();
+}
+
+function hideRoom() {
+    document.getElementById("room-lamp").setAttribute('src', '');
+    document.getElementById("room-lamp").setAttribute('alt', 'Lamp');
     document.getElementById('room-modal').style.display='none';
     document.getElementById("my_room_name").innerHTML ="";
-    let pressOnClick = ""
-    document.getElementById("room-lamp").setAttribute('src', "lightoff.png")
-    document.getElementById("room-lamp").setAttribute('alt', "Lamp.")
+    let pressOnClick = "";
     document.getElementById("press-button").setAttribute("onclick",pressOnClick);
+}
+
+function connect(id, code) {
+    let endpoint = '/ws-lamp';
+    let socket = new SockJS(endpoint);
+    stompClient = Stomp.over(socket);
+    let subscribeCallback = function (lampCondition) {
+        let isLightsOn = JSON.parse(lampCondition.body).isLightsOn;
+        showLamp(isLightsOn);
+    } ;
+    let headers = {};
+    let connectCallback =  function () {
+        let destination = '/topic/get-lamp/' + id;
+        stompClient.subscribe(destination, subscribeCallback);
+        getLampCondition(id, code)
+    };
+    stompClient.debug = null;
+    stompClient.connect(headers, connectCallback);
+}
+
+function disconnect() {
+    if (stompClient !== null) {
+        stompClient.disconnect();
+    }
+    console.log("Disconnected");
+}
+
+function getLampCondition(id, code) {
+    let destination = "/app/lamp/" + id;
+    stompClient.send(destination, {}, JSON.stringify({'code': code}));
+}
+
+function pressButton(id, code) {
+    let destination = "/app/press/" + id;
+    stompClient.send(destination, {}, JSON.stringify({'code': code}));
+}
+
+function showLamp(isLightsOn) {
+    if (isLightsOn){
+        document.getElementById("room-lamp").setAttribute('src', "lighton.png");
+        document.getElementById("room-lamp").setAttribute('alt', "Lamp is lights on.");
+    } else {
+        document.getElementById("room-lamp").setAttribute('src', "lightoff.png");
+        document.getElementById("room-lamp").setAttribute('alt', "Lamp is lights off.");
+    }
 }
