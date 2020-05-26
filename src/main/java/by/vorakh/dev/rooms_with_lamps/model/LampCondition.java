@@ -36,7 +36,7 @@ public class LampCondition implements Serializable {
     public String toString() {
         return new StringBuffer(getClass().getSimpleName())
                 .append("[")
-                .append(", isLightsOn=").append(isLightsOn)
+                .append("isLightsOn=").append(isLightsOn)
                 .append("]")
                 .toString();
     }
