@@ -21,7 +21,7 @@
 		<tomcat.version>9.0.33</tomcat.version>
 		<hibernate.version>5.4.12.Final</hibernate.version>
 		<junit-jupiter.version>5.6.2</junit-jupiter.version>
-		<junit.version>4.13</junit.version>
+		<junit.version>4.13.1</junit.version>
 		<mockito.version>3.2.4</mockito.version>
 	</properties>
 
